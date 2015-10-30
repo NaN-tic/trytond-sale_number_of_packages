@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- The COPYRIGHT file at the top level of this repository contains the full
+     copyright notices and license terms. -->
+<data>
+    <xpath expr="/form/group[@id='packaging_units']/field[@name='product_uom']" position="after">
+        <label name="number_of_packages_multiplier"/>
+        <field name="number_of_packages_multiplier" colspan="2"/>
+        <label name="number_of_packages_divider"/>
+        <field name="number_of_packages_divider" colspan="2"/>
+    </xpath>
+</data>
