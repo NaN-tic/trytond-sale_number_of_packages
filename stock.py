@@ -716,7 +716,7 @@ class Location:
         fields.Integer('Normalized number of packages'),
         'get_number_of_packages')
     forecast_normalized_number_of_packages = fields.Function(
-        fields.Integer('Forecast Number of packages'),
+        fields.Integer('Forecast Normalized number of packages'),
         'get_number_of_packages')
 
     @classmethod

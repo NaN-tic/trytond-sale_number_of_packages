@@ -1,0 +1,102 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "error:sale.line:"
+msgid "Number of packages required for sale line \"%s\"."
+msgstr "Número de embalajes obligatorio en la líniea de venta \"%s\"."
+
+msgctxt "error:sale.line:"
+msgid "Package required for sale line \"%s\"."
+msgstr "Embalaje obligatorio en la líniea de venta \"%s\"."
+
+msgctxt "error:sale.line:"
+msgid ""
+"Quantity by Package is required for package \"%(package)s\" of sale line "
+"\"%(record)s\"."
+msgstr ""
+"La cantidad por embalaje es obligatoria en el embalaje \"%(package)s\" de la"
+" línia de venta \"%(record)s\"."
+
+msgctxt "error:sale.line:"
+msgid ""
+"The quantity of sale line \"%s\" do not correspond to the number of "
+"packages."
+msgstr ""
+"La cantidad de la línea de venta \"%s\" no corresponde al número de "
+"embalajes."
+
+msgctxt "error:stock.lot:"
+msgid "Number of Packages Divider of Lot must be positive"
+msgstr "El divisor embalajes del lote debe ser positivo."
+
+msgctxt "error:stock.lot:"
+msgid "Number of Packages Multiplier of Lot must be positive"
+msgstr "El multiplicador embalajes del lote debe ser positivo."
+
+msgctxt "error:stock.lot:"
+msgid ""
+"The Number of Packages Divider of lot \"%s\" doesn't corresponds with the "
+"Multiplier."
+msgstr "El divisor embalajes del lote \"%s\" no corresponde con el multiplicador."
+
+msgctxt "field:account.invoice.line,number_of_packages:"
+msgid "Number of packages"
+msgstr "Embalajes"
+
+msgctxt "field:account.invoice.line,package:"
+msgid "Packaging"
+msgstr "Embalaje"
+
+msgctxt "field:product.product,forecast_normalized_number_of_packages:"
+msgid "Forecast Normalized number of packages"
+msgstr "Embalajes normalizados esperados"
+
+msgctxt "field:product.product,normalized_number_of_packages:"
+msgid "Normalized number of packages"
+msgstr "Embalajes normalizados"
+
+msgctxt "field:sale.line,number_of_packages:"
+msgid "Number of packages"
+msgstr "Embalajes"
+
+msgctxt "field:sale.line,package:"
+msgid "Packaging"
+msgstr "Embalaje"
+
+msgctxt "field:stock.location,forecast_normalized_number_of_packages:"
+msgid "Forecast Normalized number of packages"
+msgstr "Embalajes normalizados esperados"
+
+msgctxt "field:stock.location,normalized_number_of_packages:"
+msgid "Normalized number of packages"
+msgstr "Embalajes normalizados"
+
+msgctxt "field:stock.lot,forecast_normalized_number_of_packages:"
+msgid "Forecast Normalized number of packages"
+msgstr "Embalajes normalizados esperados"
+
+msgctxt "field:stock.lot,normalized_number_of_packages:"
+msgid "Normalized number of packages"
+msgstr "Embalajes normalizados"
+
+msgctxt "field:stock.lot,number_of_packages_divider:"
+msgid "Number of Packages Divider"
+msgstr "Divisor embalajes"
+
+msgctxt "field:stock.lot,number_of_packages_multiplier:"
+msgid "Number of Packages Multiplier"
+msgstr "Multiplicador embalajes"
+
+msgctxt "help:stock.lot,number_of_packages_divider:"
+msgid ""
+"How many default packages should be used to supply a package of this lot?"
+msgstr ""
+"¿Cuántos embalajes por defecto corresponden a un embalaje de este lote?"
+
+msgctxt "help:stock.lot,number_of_packages_multiplier:"
+msgid ""
+"How many packages of this lot should be used to supply a default package?"
+msgstr ""
+"¿Cuántos embalajes de este lote se deben usar para suministrar un embalaje "
+"por defecto?"
