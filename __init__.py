@@ -10,6 +10,7 @@ def register():
     Pool.register(
         InvoiceLine,
         SaleLine,
+        Product,
         Lot,
         Move,
         ShipmentOut,

@@ -12,26 +12,46 @@ from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Bool, Eval
 from trytond.transaction import Transaction
 
-__all__ = ['Lot', 'Move', 'ShipmentOut', 'Location']
+__all__ = ['Product', 'Lot', 'Move', 'ShipmentOut', 'Location']
 __metaclass__ = PoolMeta
+
+
+class Product:
+    __name__ = 'product.product'
+    normalized_number_of_packages = fields.Function(fields.Integer(
+            'Normalized number of packages', states={
+                'invisible': ~Eval('package_required', False),
+                }, depends=['package_required']),
+        'get_quantity', searcher='search_quantity')
+    forecast_normalized_number_of_packages = fields.Function(
+        fields.Integer('Forecast Normalized number of packages', states={
+                'invisible': ~Eval('package_required', False),
+                }, depends=['package_required']),
+        'get_quantity', searcher='search_quantity')
+
+    @classmethod
+    def _quantity_context(cls, name):
+        if name.endswith('normalized_number_of_packages'):
+            quantity_fname = name.replace('normalized_number_of_packages',
+                'number_of_packages')
+            context = super(Product, cls)._quantity_context(quantity_fname)
+            context['normalized_number_of_packages'] = True
+            return context
+        return super(Product, cls)._quantity_context(name)
 
 
 class Lot:
     __name__ = 'stock.lot'
-    package_is_greater = fields.Function(fields.Boolean('Package is greater'),
-        'get_package_is_greater')
     number_of_packages_multiplier = fields.Integer(
         'Number of Packages Multiplier', states={
-            'invisible': (~Bool(Eval('package_qty'))
-                | Eval('package_is_greater', False)),
-            }, depends=['package_qty', 'package_is_greater'],
+            'invisible': ~Bool(Eval('package_qty')),
+            }, depends=['package_qty'],
         help="How many packages of this lot should be used to supply a "
         "default package?")
     number_of_packages_divider = fields.Integer('Number of Packages Divider',
         states={
-            'invisible': (~Bool(Eval('package_qty'))
-                | ~Eval('package_is_greater', False)),
-            }, depends=['package_qty', 'package_is_greater'],
+            'invisible': ~Bool(Eval('package_qty')),
+            }, depends=['package_qty'],
         help="How many default packages should be used to supply a package of "
         "this lot?")
     normalized_number_of_packages = fields.Function(fields.Integer(
@@ -62,22 +82,7 @@ class Lot:
                 'unexpected_number_of_packages_divider_multiplier': (
                     'The Number of Packages Divider of lot "%s" doesn\'t '
                     'corresponds with the Multiplier.'),
-                'unexpected_number_of_packages_multiplier': (
-                    'The Number of Packages Multiplier of lot "%s" must to be '
-                    'empty because the lot\'s package is greater than '
-                    'product\'s default package.'),
-                'unexpected_number_of_packages_divider': (
-                    'The Number of Packages Divider of lot "%s" must to be '
-                    'empty because the lot\'s package is smaller than '
-                    'product\'s default package.'),
                 })
-
-    def get_package_is_greater(self, name):
-        if (self.package_qty == None
-                or not self.product.default_package
-                or self.product.default_package.qty == None):
-            return
-        return (self.package_qty > self.product.default_package.qty)
 
     @classmethod
     def _quantity_context(cls, name):
@@ -92,7 +97,7 @@ class Lot:
     def compute_number_of_packages(self, normalized_number_of_packages):
         if not normalized_number_of_packages:
             return normalized_number_of_packages
-        if self.package_is_greater and self.number_of_packages_divider:
+        if self.number_of_packages_divider:
             return int(math.ceil(
                     normalized_number_of_packages
                     / float(self.number_of_packages_divider)))
@@ -104,7 +109,7 @@ class Lot:
     def compute_normalized_number_of_packages(self, number_of_packages):
         if not number_of_packages:
             return number_of_packages
-        if self.package_is_greater and self.number_of_packages_divider:
+        if self.number_of_packages_divider:
             return number_of_packages * self.number_of_packages_divider
         elif self.number_of_packages_multiplier:
             return int(math.ceil(
@@ -125,24 +130,15 @@ class Lot:
         if (self.number_of_packages_multiplier == 1
                 and self.number_of_packages_divider == 1):
             return
-        if self.package_is_greater == None:
-            return
         if (self.number_of_packages_multiplier == 1
                 and self.number_of_packages_divider != 1
                 or self.number_of_packages_divider == 1
-                and self.number_of_packages_multiplier != 1):
+                and self.number_of_packages_multiplier != 1
+                or self.number_of_packages_divider != None
+                and self.number_of_packages_multiplier != None):
             self.raise_user_error(
                 'unexpected_number_of_packages_divider_multiplier',
                 self.rec_name)
-        if self.package_is_greater:
-            if self.number_of_packages_multiplier != None:
-                self.raise_user_error(
-                    'unexpected_number_of_packages_multiplier',
-                    self.rec_name)
-        else:
-            if self.number_of_packages_divider != None:
-                self.raise_user_error('unexpected_number_of_packages_divider',
-                    self.rec_name)
 
     @classmethod
     def create(cls, vlist):
@@ -184,9 +180,22 @@ class Move:
         Lot = pool.get('stock.lot')
         lot = Lot.__table__()
 
+        if not Transaction().context.get('normalized_number_of_packages'):
+            return super(Move, cls).compute_quantities_query(
+                location_ids, with_childs=with_childs, grouping=grouping,
+                grouping_filter=grouping_filter)
+
+        new_grouping = grouping[:]
+        new_grouping_filter = grouping_filter[:]
+        if 'lot' not in grouping:
+            new_grouping = grouping + ('lot',)
+            new_grouping_filter = grouping_filter + (None,)
+
         query = super(Move, cls).compute_quantities_query(
-            location_ids, with_childs=with_childs, grouping=grouping,
-            grouping_filter=grouping_filter)
+            location_ids, with_childs=with_childs, grouping=new_grouping,
+            grouping_filter=new_grouping_filter)
+        if not query:
+            return query
 
         def normalized_quantity_column(qty_col, table):
             """
@@ -208,27 +217,32 @@ class Move:
                     qty_col * table.number_of_packages_divider),
                 else_=qty_col)
 
-        if (query and 'lot'
-                and Transaction().context.get('normalized_number_of_packages')
-                and 'lot' in grouping):
-            columns = []
-            group_by = []
-            for col in query.columns:
-                if col.output_name == 'quantity':
-                    columns.append(
-                        normalized_quantity_column(
-                            Sum(Column(query, col.output_name)),
-                            lot).as_('quantity'))
-                else:
-                    new_col = Column(query, col.output_name)
-                    columns.append(new_col)
-                    group_by.append(new_col)
-            columns = tuple(columns)
-            group_by += [
-                lot.number_of_packages_multiplier,
-                lot.number_of_packages_divider]
-            query = query.join(lot, condition=query.lot == lot.id
-                ).select(*columns, group_by=group_by)
+        columns = []
+        group_by = []
+        for col in query.columns:
+            if col.output_name == 'quantity':
+                columns.append(
+                    normalized_quantity_column(
+                        Sum(Column(query, col.output_name)),
+                        lot).as_('quantity'))
+            else:
+                new_col = Column(query, col.output_name)
+                columns.append(new_col)
+                group_by.append(new_col)
+        columns = tuple(columns)
+        group_by += [
+            lot.number_of_packages_multiplier,
+            lot.number_of_packages_divider]
+        query = query.join(lot, condition=query.lot == lot.id
+            ).select(*columns, group_by=group_by)
+
+        if 'lot' not in grouping:
+            query_keys = [Column(query, key).as_(key) for key in grouping]
+            columns = ([query.location.as_('location')]
+                + query_keys
+                + [Sum(query.quantity).as_('quantity')])
+            query = query.select(*columns,
+                group_by=[query.location] + query_keys)
         return query
 
     @classmethod
