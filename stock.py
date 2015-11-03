@@ -186,10 +186,12 @@ class Move:
                 grouping_filter=grouping_filter)
 
         new_grouping = grouping[:]
-        new_grouping_filter = grouping_filter[:]
+        new_grouping_filter = (grouping_filter[:] if grouping_filter != None
+            else None)
         if 'lot' not in grouping:
             new_grouping = grouping + ('lot',)
-            new_grouping_filter = grouping_filter + (None,)
+            if grouping_filter != None:
+                new_grouping_filter = grouping_filter + (None,)
 
         query = super(Move, cls).compute_quantities_query(
             location_ids, with_childs=with_childs, grouping=new_grouping,
