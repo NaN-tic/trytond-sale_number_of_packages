@@ -13,13 +13,6 @@ class SaleLine(PackagedMixin):
     @classmethod
     def __setup__(cls):
         super(SaleLine, cls).__setup__()
-        cls.number_of_packages.domain = [
-            ['OR',
-                ('number_of_packages', '=', None),
-                ('number_of_packages', '!=', 0),
-                ]
-            ]
-
         cls._error_messages.update({
                 'package_required': 'Package required for sale line "%s".',
                 'number_of_packages_required': (
