@@ -1,6 +1,7 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 import math
+from datetime import date
 from sql import Column, Null
 from sql.aggregate import Sum
 from sql.conditionals import Case
@@ -362,10 +363,17 @@ class Move:
                 key2 = key[-1]
                 if key2 == None:  # move without lot/package
                     if subkey in pbl2:
-                        location_n_packages[location] = [
-                            (key2, n_packages)
-                            for key2, n_packages
-                            in pbl2[subkey].iteritems()]
+                        if grouping[-1] == 'lot':
+                            location_n_packages[location] = (
+                                cls._sort_lots_to_pick([
+                                    (id2lot[key2], n_packages)
+                                    for key2, n_packages
+                                    in pbl2[subkey].iteritems()]))
+                        else:
+                            location_n_packages[location] = [
+                                (key2, n_packages)
+                                for key2, n_packages
+                                in pbl2[subkey].iteritems()]
                 elif subkey in pbl2 and key2 in pbl2[subkey]:
                     location_n_packages[location] = [
                         (key2, pbl2[subkey][key2]),
@@ -459,6 +467,14 @@ class Move:
         if to_assign:
             Move.assign(to_assign)
         return success
+
+    @classmethod
+    def _sort_lots_to_pick(cls, lots_to_pick):
+        """
+        Receive a list of (lot, quantity) and return an ordered ist of
+        (lot_id, quantity)
+        """
+        return [(x[0].id, x[1]) for x in lots_to_pick]
 
     def pick_package_number_of_packages(self, location_n_packages):
         """
