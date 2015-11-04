@@ -382,27 +382,16 @@ class Move:
             for _, _, _, n_packages in to_pick:
                 picked_n_packages += n_packages
 
+            not_picked_n_packages = 0
             if move.number_of_packages > picked_n_packages:
                 success = False
                 first = False
                 not_picked_n_packages = (move.number_of_packages
                     - picked_n_packages)
-                # cls.write([move], {
-                #         'number_of_packages': not_picked_n_packages,
-                #         'quantity': Uom.compute_qty(
-                #             move.package.uom,
-                #             not_picked_n_packages * move.package.qty,
-                #             move.uom),
-                #         })
-                to_write.extend(([move], {
-                            'number_of_packages': not_picked_n_packages,
-                            'quantity': Uom.compute_qty(
-                                move.package.uom,
-                                not_picked_n_packages * move.package.qty,
-                                move.uom),
-                            }))
             else:
                 first = True
+
+            picked_qty = 0.0
             for from_location, key, n_packages, _ in to_pick:
                 values = {
                     'from_location': from_location.id,
@@ -424,11 +413,13 @@ class Move:
                             package.uom,
                             n_packages * package.qty,
                             move.uom)
-                if 'quantity' not in values:
+                if ('quantity' not in values and move.package
+                        and move.package.qty):
                     values['quantity'] = Uom.compute_qty(
                         move.package.uom,
                         n_packages * move.package.qty,
                         move.uom)
+                picked_qty += values.get('quantity', 0.0)
 
                 if first:
                     # cls.write([move], values)
@@ -450,6 +441,19 @@ class Move:
                 to_subkey = get_key(move, to_location)[:-1]
                 pbl2.setdefault(to_subkey, {}).setdefault(key, 0)
                 pbl2[to_subkey][key] += n_packages
+            if not_picked_n_packages:
+                # cls.write([move], {
+                #         'number_of_packages': not_picked_n_packages,
+                #         'quantity': Uom.compute_qty(
+                #             move.package.uom,
+                #             not_picked_n_packages * move.package.qty,
+                #             move.uom),
+                #         })
+                to_write.extend(([move], {
+                            'number_of_packages': not_picked_n_packages,
+                            'quantity': Uom.round(move.quantity - picked_qty,
+                                move.uom.rounding),
+                            }))
         if to_write:
             Move.write(*to_write)
         if to_assign:
