@@ -235,7 +235,7 @@ class Move:
         group_by += [
             lot.number_of_packages_multiplier,
             lot.number_of_packages_divider]
-        query = query.join(lot, condition=query.lot == lot.id
+        query = query.join(lot, type_='left', condition=query.lot == lot.id
             ).select(*columns, group_by=group_by)
 
         if 'lot' not in grouping:
