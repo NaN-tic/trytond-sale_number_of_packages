@@ -38,13 +38,14 @@ class SaleLine(PackagedMixin):
                     or not self.product
                     or self.product.type == 'service'
                     or not getattr(invoice_line, 'stock_moves', None)):
+                if not self.package or not self.number_of_packages:
+                    continue
                 invoice_line.package = self.package
-                number_of_packages = abs(self.number_of_packages)
                 if invoice_line.quantity != abs(self.quantity):
-                    invoice_line.number_of_packages = int(
-                        round(invoice_line.quantity / self.package.qty))
+                    number_of_packages = int(round(invoice_line.quantity
+                            / self.package.qty))
                 else:
-                    invoice_line.number_of_packages = self.number_of_packages
+                    number_of_packages = abs(self.number_of_packages)
             else:
                 number_of_packages = 0
                 packages = set()
