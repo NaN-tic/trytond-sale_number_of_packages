@@ -605,7 +605,7 @@ class ShipmentOut:
                     inv_move, 'inventory')
                 available_outgoing_moves = outgoing_moves_by_key.get(key, [])
                 if inv_move.package:
-                    inv_qty = inv_move.number_of_packages
+                    inv_qty = inv_move.number_of_packages or 0
                 else:
                     inv_qty = Uom.compute_qty(inv_move.uom,
                         inv_move.quantity,
