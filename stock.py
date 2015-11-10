@@ -333,7 +333,7 @@ class Move:
             if n_packages <= 0:
                 continue
             pbl2.setdefault(key[:-1], {})[key[-1]] = n_packages
-            if grouping[-1] == 'lot':
+            if grouping[-1] == 'lot' and key[-1]:
                 id2lot[key[-1]] = None
 
         if grouping[-1] == 'lot':
@@ -368,7 +368,8 @@ class Move:
                                 cls._sort_lots_to_pick([
                                     (id2lot[key2], n_packages)
                                     for key2, n_packages
-                                    in pbl2[subkey].iteritems()]))
+                                    in pbl2[subkey].iteritems()
+                                    if key2]))
                         else:
                             location_n_packages[location] = [
                                 (key2, n_packages)
