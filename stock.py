@@ -1,7 +1,6 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 import math
-from datetime import date
 from sql import Column, Null
 from sql.aggregate import Sum
 from sql.conditionals import Case
