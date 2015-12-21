@@ -457,10 +457,14 @@ class Move:
                 #             not_picked_n_packages * move.package.qty,
                 #             move.uom),
                 #         })
+                not_picked_qty = Uom.round(move.quantity - picked_qty,
+                    move.uom.rounding)
+                if not_picked_qty < move.uom.rounding:
+                    not_picked_n_packages = 0
+                    not_picked_qty = 0
                 to_write.extend(([move], {
                             'number_of_packages': not_picked_n_packages,
-                            'quantity': Uom.round(move.quantity - picked_qty,
-                                move.uom.rounding),
+                            'quantity': not_picked_qty,
                             }))
         if to_write:
             Move.write(*to_write)
@@ -596,7 +600,6 @@ class ShipmentOut:
 
             to_create = []
             to_write = set()
-            to_delete = []
             for inv_move in shipment.inventory_moves:
                 if inv_move.state == 'cancel':
                     continue
@@ -671,8 +674,6 @@ class ShipmentOut:
                 for move in to_write:
                     to_write_vals.extend(([move], move._save_values))
                 Move.write(*to_write_vals)
-            if to_delete:
-                Move.delete(to_delete)
 
     def _get_outgoing_move(self, move):
         Move = Pool().get('stock.move')
