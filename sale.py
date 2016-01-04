@@ -3,8 +3,21 @@
 from trytond.pool import PoolMeta
 from trytond.modules.stock_number_of_packages.package import PackagedMixin
 
-__all__ = ['SaleLine']
+__all__ = ['Sale', 'SaleLine']
 __metaclass__ = PoolMeta
+
+
+class Sale:
+    __name__ = 'sale.sale'
+
+    @classmethod
+    def quote(cls, sales):
+        # Check when quote the sale because in draft we accept
+        # quantity != number_of_packages * package.qty
+        for sale in sales:
+            for line in sale.lines:
+                line.check_package(line.quantity)
+        super(Sale, cls).quote(sales)
 
 
 class SaleLine(PackagedMixin):
@@ -78,5 +91,5 @@ class SaleLine(PackagedMixin):
     def validate(cls, records):
         super(SaleLine, cls).validate(records)
         for line in records:
-            if line.sale.state not in ('draft', 'cancel'):
+            if line.sale.state not in ('draft', 'done', 'cancel'):
                 line.check_package(line.quantity)
