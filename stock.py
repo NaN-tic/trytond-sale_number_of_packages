@@ -12,32 +12,8 @@ from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Bool, Eval
 from trytond.transaction import Transaction
 
-__all__ = ['Product', 'Lot', 'Move', 'ShipmentOut', 'Location']
+__all__ = ['Lot', 'Move', 'ShipmentOut', 'Location']
 __metaclass__ = PoolMeta
-
-
-class Product:
-    __name__ = 'product.product'
-    normalized_number_of_packages = fields.Function(fields.Integer(
-            'Normalized number of packages', states={
-                'invisible': ~Eval('package_required', False),
-                }, depends=['package_required']),
-        'get_quantity', searcher='search_quantity')
-    forecast_normalized_number_of_packages = fields.Function(
-        fields.Integer('Forecast Normalized number of packages', states={
-                'invisible': ~Eval('package_required', False),
-                }, depends=['package_required']),
-        'get_quantity', searcher='search_quantity')
-
-    @classmethod
-    def _quantity_context(cls, name):
-        if name.endswith('normalized_number_of_packages'):
-            quantity_fname = name.replace('normalized_number_of_packages',
-                'number_of_packages')
-            context = super(Product, cls)._quantity_context(quantity_fname)
-            context['normalized_number_of_packages'] = True
-            return context
-        return super(Product, cls)._quantity_context(name)
 
 
 class Lot:

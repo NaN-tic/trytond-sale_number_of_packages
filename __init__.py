@@ -2,6 +2,7 @@
 # copyright notices and license terms.
 from trytond.pool import Pool
 from .invoice import *
+from .product import *
 from .sale import *
 from .stock import *
 
@@ -12,6 +13,7 @@ def register():
         Sale,
         SaleLine,
         Product,
+        ProductPack,
         Lot,
         Move,
         ShipmentOut,
