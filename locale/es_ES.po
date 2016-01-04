@@ -2,6 +2,27 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
+msgctxt "error:product.pack:"
+msgid ""
+"You cannot change the Product for a packaging which is associated to moves "
+"or sales."
+msgstr ""
+"No puedes cambiar el producto de un embalaje asociado a movimientos de estoc"
+" o ventas."
+
+msgctxt "error:product.pack:"
+msgid ""
+"You cannot change the Quantity by Package for a packaging which is "
+"associated to moves or sales."
+msgstr ""
+"No puedes cambiar la cantidad por embalaje de un embalaje asociado a "
+"movimientos de estoc o ventas."
+
+msgctxt "error:product.pack:"
+msgid "You cannot delete a packaging which is associated to moves or sales."
+msgstr ""
+"No puedes eliminar un embalaje asociado a movimientos de estoc o ventas."
+
 msgctxt "error:sale.line:"
 msgid "Number of packages required for sale line \"%s\"."
 msgstr "Número de embalajes obligatorio en la líniea de venta \"%s\"."
