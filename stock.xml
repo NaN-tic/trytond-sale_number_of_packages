@@ -30,7 +30,7 @@
     <data depends="stock_lot_quantity">
         <record model="ir.ui.view" id="lot_view_tree_qty">
             <field name="model">stock.lot</field>
-            <field name="inherit" ref="stock_lot.lot_view_tree"/>
+            <field name="inherit" ref="stock_lot_quantity.lot_view_list_qty"/>
             <field name="name">lot_tree_qty</field>
         </record>
     </data>
