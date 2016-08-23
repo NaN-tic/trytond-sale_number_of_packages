@@ -6,7 +6,7 @@
         <!-- product.product -->
         <record model="ir.ui.view" id="product_view_tree_qty">
             <field name="model">product.product</field>
-            <field name="type">tree</field>
+            <field name="type" eval="None"/>
             <field name="inherit" ref="stock.product_view_tree_qty"/>
             <field name="name">product_tree_qty</field>
         </record>
@@ -14,7 +14,7 @@
         <!-- stock.lot -->
         <record model="ir.ui.view" id="lot_view_form">
             <field name="model">stock.lot</field>
-            <field name="type">form</field>
+            <field name="type" eval="None"/>
             <field name="inherit" ref="stock_lot.lot_view_form"/>
             <field name="name">lot_form</field>
         </record>
@@ -22,7 +22,7 @@
         <!-- stock.location -->
         <record model="ir.ui.view" id="location_quantity_view_tree">
             <field name="model">stock.location</field>
-            <field name="type">tree</field>
+            <field name="type" eval="None"/>
             <field name="inherit" ref="stock.location_quantity_view_tree"/>
             <field name="name">location_quantity_tree</field>
         </record>
@@ -30,6 +30,7 @@
     <data depends="stock_lot_quantity">
         <record model="ir.ui.view" id="lot_view_tree_qty">
             <field name="model">stock.lot</field>
+            <field name="type" eval="None"/>
             <field name="inherit" ref="stock_lot.lot_view_tree"/>
             <field name="name">lot_tree_qty</field>
         </record>
