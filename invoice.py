@@ -24,12 +24,7 @@ class InvoiceLine:
 
     @fields.depends('number_of_packages', 'package')
     def on_change_number_of_packages(self):
-        result = {}
+        self.quantity = None
         if self.number_of_packages != None:
             if self.package and self.package.qty:
-                result['quantity'] = self.number_of_packages * self.package.qty
-            else:
-                result['quantity'] = None
-        else:
-            result['quantity'] = None
-        return result
+                self.quantity = self.number_of_packages * self.package.qty
