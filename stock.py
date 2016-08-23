@@ -296,7 +296,7 @@ class Move:
         Lot = pool.get('stock.lot')
         Move = pool.get('stock.move')
 
-        Transaction().cursor.lock(cls._table)
+        Transaction().database.lock(Transaction().connection, cls._table)
 
         if with_childs:
             location2childs = {}
