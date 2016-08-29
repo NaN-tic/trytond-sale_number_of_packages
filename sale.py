@@ -23,8 +23,8 @@ class SaleLine(PackagedMixin):
                     'line "%s" do not correspond to the number of packages.')
                 })
 
-    def get_invoice_line(self, invoice_type):
-        invoice_lines = super(SaleLine, self).get_invoice_line(invoice_type)
+    def get_invoice_line(self):
+        invoice_lines = super(SaleLine, self).get_invoice_line()
         if not invoice_lines:
             return invoice_lines
         if not self.package:
@@ -34,16 +34,16 @@ class SaleLine(PackagedMixin):
             if invoice_line.type != 'line':
                 continue
 
-            if (self.sale.invoice_method == 'order'
-                    or not self.product
-                    or self.product.type == 'service'
-                    or not getattr(invoice_line, 'stock_moves', None)):
+            if (self.sale.invoice_method == 'order' or
+                    not self.product or
+                    self.product.type == 'service' or
+                    not getattr(invoice_line, 'stock_moves', None)):
                 if not self.package or not self.number_of_packages:
                     continue
                 invoice_line.package = self.package
                 if invoice_line.quantity != abs(self.quantity):
-                    number_of_packages = int(round(invoice_line.quantity
-                            / self.package.qty))
+                    number_of_packages = int(round(invoice_line.quantity /
+                            self.package.qty))
                 else:
                     number_of_packages = abs(self.number_of_packages)
             else:
