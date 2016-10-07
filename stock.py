@@ -459,8 +459,8 @@ class Move:
                 #         })
                 to_write.extend(([move], {
                             'number_of_packages': not_picked_n_packages,
-                            'quantity': Uom.round(move.quantity - picked_qty,
-                                move.uom.rounding),
+                            'quantity': move.uom.round(
+                                move.quantity - picked_qty),
                             }))
         if to_write:
             Move.write(*to_write)
