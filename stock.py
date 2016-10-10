@@ -198,13 +198,14 @@ class Move:
         columns = []
         group_by = []
         for col in query.columns:
-            if col.output_name == 'quantity':
+            col_name = col.name if isinstance(col, Column) else col.output_name
+            if col_name == 'quantity':
                 columns.append(
                     normalized_quantity_column(
-                        Sum(Column(query, col.output_name)),
+                        Sum(Column(query, col_name)),
                         lot).as_('quantity'))
             else:
-                new_col = Column(query, col.output_name)
+                new_col = Column(query, col_name)
                 columns.append(new_col)
                 group_by.append(new_col)
         columns = tuple(columns)
