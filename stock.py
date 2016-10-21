@@ -273,7 +273,9 @@ class Move:
         Lot = pool.get('stock.lot')
         Move = pool.get('stock.move')
 
-        Transaction().cursor.lock(cls._table)
+        # TODO: commented because it generates locks in the only user of this
+        # module
+        # Transaction().cursor.lock(cls._table)
 
         if with_childs:
             location2childs = {}
