@@ -13,11 +13,12 @@ from trytond.pyson import Bool, Eval
 from trytond.transaction import Transaction
 
 __all__ = ['Product', 'Lot', 'Move', 'ShipmentOut', 'Location']
-__metaclass__ = PoolMeta
 
 
 class Product:
     __name__ = 'product.product'
+    __metaclass__ = PoolMeta
+
     normalized_number_of_packages = fields.Function(fields.Integer(
             'Normalized number of packages', states={
                 'invisible': ~Eval('package_required', False),
@@ -42,6 +43,7 @@ class Product:
 
 class Lot:
     __name__ = 'stock.lot'
+    __metaclass__ = PoolMeta
     number_of_packages_multiplier = fields.Integer(
         'Number of Packages Multiplier', states={
             'invisible': ~Bool(Eval('package_qty')),
@@ -172,6 +174,7 @@ class Lot:
 
 class Move:
     __name__ = 'stock.move'
+    __metaclass__ = PoolMeta
 
     @classmethod
     def compute_quantities_query(cls, location_ids, with_childs=False,
@@ -562,6 +565,7 @@ class Move:
 
 class ShipmentOut:
     __name__ = 'stock.shipment.out'
+    __metaclass__ = PoolMeta
 
     @classmethod
     def pack(cls, shipments):
@@ -640,6 +644,8 @@ class ShipmentOut:
 
 class Location:
     __name__ = 'stock.location'
+    __metaclass__ = PoolMeta
+
     normalized_number_of_packages = fields.Function(
         fields.Integer('Normalized number of packages'),
         'get_number_of_packages')

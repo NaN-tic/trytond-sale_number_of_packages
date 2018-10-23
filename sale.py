@@ -4,11 +4,11 @@ from trytond.pool import PoolMeta
 from trytond.modules.stock_number_of_packages.package import PackagedMixin
 
 __all__ = ['SaleLine']
-__metaclass__ = PoolMeta
 
 
 class SaleLine(PackagedMixin):
     __name__ = 'sale.line'
+    __metaclass__ = PoolMeta
 
     @classmethod
     def __setup__(cls):

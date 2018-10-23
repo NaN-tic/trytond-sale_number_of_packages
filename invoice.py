@@ -5,11 +5,11 @@ from trytond.pyson import Bool, Eval
 from trytond.pool import PoolMeta
 
 __all__ = ['InvoiceLine']
-__metaclass__ = PoolMeta
 
 
 class InvoiceLine:
     __name__ = 'account.invoice.line'
+    __metaclass__ = PoolMeta
     package = fields.Many2One('product.pack', 'Packaging', domain=[
             ('product.products', 'in', [Eval('product')]),
             ],
