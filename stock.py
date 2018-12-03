@@ -7,7 +7,7 @@ from sql.conditionals import Case
 from sql.functions import Ceil
 from sql.operators import NotEqual
 
-from trytond.model import Model, fields
+from trytond.model import Model, fields, Check
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Bool, Eval
 from trytond.transaction import Transaction
@@ -70,15 +70,16 @@ class Lot:
     @classmethod
     def __setup__(cls):
         super(Lot, cls).__setup__()
+        t = cls.__table__()
         cls._sql_constraints += [
             ('check_lot_number_of_packages_multiplier_pos',
-                'CHECK(number_of_packages_multiplier IS NULL '
-                    'OR number_of_packages_multiplier > 0)',
-                'Number of Packages Multiplier of Lot must be positive'),
+                Check(t, (t.number_of_packages_multiplier == Null)
+                    | (t.number_of_packages_multiplier > '0')),
+                'Number of Packages Multiplier of Lot must be positive.'),
             ('check_lot_number_of_packages_divider_pos',
-                'CHECK(number_of_packages_divider IS NULL '
-                    'OR number_of_packages_divider > 0)',
-                'Number of Packages Divider of Lot must be positive'),
+                Check(t, (t.number_of_packages_divider == Null)
+                    | (t.number_of_packages_divider > '0')),
+                'Number of Packages Divider of Lot must be positive.'),
             ]
         cls._error_messages.update({
                 'unexpected_number_of_packages_divider_multiplier': (
