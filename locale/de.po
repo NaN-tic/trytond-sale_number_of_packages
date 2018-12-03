@@ -27,11 +27,11 @@ msgstr ""
 "Packstücke."
 
 msgctxt "error:stock.lot:"
-msgid "Number of Packages Divider of Lot must be positive"
+msgid "Number of Packages Divider of Lot must be positive."
 msgstr "Paketanzahlteiler für Chargen muss eine positive Zahl sein."
 
 msgctxt "error:stock.lot:"
-msgid "Number of Packages Multiplier of Lot must be positive"
+msgid "Number of Packages Multiplier of Lot must be positive."
 msgstr "Paketanzahlmultiplikator für Chargen muss eine positive Zahl sein."
 
 msgctxt "error:stock.lot:"

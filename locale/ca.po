@@ -27,11 +27,11 @@ msgstr ""
 "d'embalatges."
 
 msgctxt "error:stock.lot:"
-msgid "Number of Packages Divider of Lot must be positive"
+msgid "Number of Packages Divider of Lot must be positive."
 msgstr "El divisor embalatges del lot ha de ser positiu."
 
 msgctxt "error:stock.lot:"
-msgid "Number of Packages Multiplier of Lot must be positive"
+msgid "Number of Packages Multiplier of Lot must be positive."
 msgstr "El multiplicador embalatges del lot ha de ser positiu."
 
 msgctxt "error:stock.lot:"
