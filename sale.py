@@ -60,14 +60,18 @@ class SaleLine(PackagedMixin):
 
     def get_move(self, shipment_type):
         move = super(SaleLine, self).get_move(shipment_type)
-        if self.package or self.number_of_packages:
-            move.package = self.package
-            # TODO: UoM?
-            if move.quantity != abs(self.quantity):
-                move.number_of_packages = int(
-                    round(move.quantity / self.package.qty))
-            else:
-                move.number_of_packages = self.number_of_packages
+        if not move:
+            return
+        if not self.package or not self.number_of_packages:
+            return
+
+        move.package = self.package
+        # TODO: UoM?
+        if move.quantity != abs(self.quantity):
+            move.number_of_packages = int(
+                round(move.quantity / self.package.qty))
+        else:
+            move.number_of_packages = self.number_of_packages
         return move
 
     @classmethod
