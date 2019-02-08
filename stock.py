@@ -327,7 +327,7 @@ class Move:
                 number_of_packages=True):
             pbl = Product.products_by_location(
                 location_ids=location_ids,
-                product_ids=product_ids,
+                grouping_filter=(product_ids,),
                 grouping=grouping)
 
         pbl2 = {}
