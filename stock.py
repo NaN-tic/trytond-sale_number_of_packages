@@ -279,6 +279,7 @@ class Move:
             else:
                 no_package_moves.append(move)
         success = True
+
         if package_lot_moves:
             success &= cls.assign_try_number_of_packages(package_lot_moves,
                 with_childs, ('product', 'lot'))
@@ -574,16 +575,11 @@ class ShipmentOut:
                 no_check_quantity_number_of_packages=False):
             super(ShipmentOut, cls).pack(shipments)
 
-    @classmethod
-    def _sync_inventory_to_outgoing_grouping_key(cls, move, type):
-        key = super(ShipmentOut,
-            cls)._sync_inventory_to_outgoing_grouping_key(move, type)
-        if move.package:
-            if type == 'outgoing':
-                key = tuple([key, move.package])
-            if type == 'inventory':
-                key = tuple([key, move.product.default_package])
-        return key
+    def _get_inventory_move(self, move):
+        inventory_move = super(ShipmentOut, self)._get_inventory_move(move)
+        inventory_move.origin = 'stock.move,%s' % move.id
+        return inventory_move
+
 
     def _get_outgoing_move(self, move):
         Move = Pool().get('stock.move')
@@ -599,43 +595,20 @@ class ShipmentOut:
             outgoing_move.origin = move
         return outgoing_move
 
-    def _update_outgoing_move(self, outgoing_move, inventory_move,
-            new_quantity):
-        outgoing_move.lot = inventory_move.lot
-        if inventory_move.package:
-            outgoing_move.package = inventory_move.package
-        self._update_outgoing_move_quantity(outgoing_move, new_quantity,
-            lot=inventory_move.lot)
-
-    def _update_outgoing_move_quantity(self, move, new_quantity, lot=None):
-        pool = Pool()
-        Uom = pool.get('product.uom')
-
-        if not move.package:
-            move.quantity = Uom.compute_qty(move.product.default_uom,
-                new_quantity, move.uom)
-            return
-
-        if lot and not move.lot:
-            new_quantity = lot.compute_normalized_number_of_packages(
-                new_quantity)
-            pending_qty = Uom.compute_qty(
-                lot.product_uom,
-                new_quantity * lot.package_qty,
-                move.uom)
-        elif lot:
-            assert lot == move.lot
-            pending_qty = Uom.compute_qty(
-                lot.product_uom,
-                new_quantity * lot.package_qty,
-                move.uom)
-        else:
-            pending_qty = Uom.compute_qty(
-                move.package.uom,
-                new_quantity * move.package.qty,
-                move.uom)
-        move.number_of_packages = new_quantity
-        move.quantity = pending_qty
+    @classmethod
+    def _sync_inventory_to_outgoing(cls, shipments, create=True, write=True):
+        Move = Pool().get('stock.move')
+        to_save = []
+        for shipment in shipments:
+            for move in shipment.inventory_moves:
+                if not move.lot:
+                    continue
+                out_move = move.origin
+                out_move.quantity = move.quantity
+                to_save.append(out_move)
+        Move.save(to_save)
+        super(ShipmentOut, cls)._sync_inventory_to_outgoing(shipments,
+            create, write)
 
     @classmethod
     def assign_try(cls, shipments):
