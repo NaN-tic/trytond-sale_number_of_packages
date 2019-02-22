@@ -227,7 +227,7 @@ class Move:
         group_by = []
         for col in query.columns:
             col_name = col.name if isinstance(col, Column) else col.output_name
-            if col_name == 'quantity':
+            if col_name == 'internal_quantity':
                 columns.append(
                     normalized_quantity_column(
                         Sum(Column(query, col_name)),
@@ -435,16 +435,11 @@ class Move:
                         move.uom)
                 picked_qty += values.get('quantity', 0.0)
 
-                if first:
-                    # cls.write([move], values)
+                if first or move.quantity - picked_qty < 0 :
                     to_write.extend(([move], values))
-                    # cls.assign([move])
                     to_assign.append(move)
                     first = False
                 else:
-                    # cls.assign(cls.copy([move], default=values))
-                    # TODO: improve copy preparing create values with
-                    #       move._save_values.update(values)
                     new_move, = cls.copy([move], default=values)
                     to_assign.append(new_move)
 
@@ -455,19 +450,16 @@ class Move:
                 to_subkey = get_key(move, to_location)[:-1]
                 pbl2.setdefault(to_subkey, {}).setdefault(key, 0)
                 pbl2[to_subkey][key] += n_packages
-            if not_picked_n_packages:
-                # cls.write([move], {
-                #         'number_of_packages': not_picked_n_packages,
-                #         'quantity': Uom.compute_qty(
-                #             move.package.uom,
-                #             not_picked_n_packages * move.package.qty,
-                #             move.uom),
-                #         })
+
+            if not_picked_n_packages and move.quantity - picked_qty > 0 :
                 to_write.extend(([move], {
                             'number_of_packages': not_picked_n_packages,
                             'quantity': move.uom.round(
                                 move.quantity - picked_qty),
                             }))
+            if move.quantity - picked_qty <= 0 :
+                success=True
+
         if to_write:
             Move.write(*to_write)
         if to_assign:
@@ -601,11 +593,15 @@ class ShipmentOut:
         to_save = []
         for shipment in shipments:
             for move in shipment.inventory_moves:
-                if not move.lot:
-                    continue
-                out_move = move.origin
-                out_move.quantity = move.quantity
-                to_save.append(out_move)
+                 if not move.lot or not move.origin:
+                     continue
+                 out_move = move.origin
+                 out_move.package = move.package
+                 out_move.number_of_packages = move.number_of_packages
+                 if move.quantity > out_move.quantity:
+                    out_move.quantity = move.quantity
+                 to_save.append(out_move)
+
         Move.save(to_save)
         super(ShipmentOut, cls)._sync_inventory_to_outgoing(shipments,
             create, write)
