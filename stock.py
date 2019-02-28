@@ -214,12 +214,12 @@ class Move:
             """
             return Case((
                     NotEqual(
-                        table.number_of_packages_multiplier, Null),
+                        table.number_of_packages_multiplier, 0),
                     Ceil(qty_col
                         / table.number_of_packages_multiplier)),
                 (
                     NotEqual(
-                        table.number_of_packages_divider, Null),
+                        table.number_of_packages_divider, 0),
                     qty_col * table.number_of_packages_divider),
                 else_=qty_col)
 
@@ -435,7 +435,7 @@ class Move:
                         move.uom)
                 picked_qty += values.get('quantity', 0.0)
 
-                if first or move.quantity - picked_qty < 0 :
+                if first:
                     to_write.extend(([move], values))
                     to_assign.append(move)
                     first = False
@@ -451,13 +451,13 @@ class Move:
                 pbl2.setdefault(to_subkey, {}).setdefault(key, 0)
                 pbl2[to_subkey][key] += n_packages
 
-            if not_picked_n_packages and move.quantity - picked_qty > 0 :
+            if not_picked_n_packages:
                 to_write.extend(([move], {
                             'number_of_packages': not_picked_n_packages,
-                            'quantity': move.uom.round(
-                                move.quantity - picked_qty),
+                            'quantity': (not_picked_n_packages*
+                                move.package.qty)
                             }))
-            if move.quantity - picked_qty <= 0 :
+            if not_picked_n_packages <= 0 :
                 success=True
 
         if to_write:
@@ -589,22 +589,41 @@ class ShipmentOut:
 
     @classmethod
     def _sync_inventory_to_outgoing(cls, shipments, create=True, write=True):
-        Move = Pool().get('stock.move')
-        to_save = []
-        for shipment in shipments:
-            for move in shipment.inventory_moves:
-                 if not move.lot or not move.origin:
-                     continue
-                 out_move = move.origin
-                 out_move.package = move.package
-                 out_move.number_of_packages = move.number_of_packages
-                 if move.quantity > out_move.quantity:
-                    out_move.quantity = move.quantity
-                 to_save.append(out_move)
+        pool = Pool()
+        Uom = pool.get('product.uom')
+        Move = pool.get('stock.move')
+        from collections import defaultdict
+        out_moves = []
 
-        Move.save(to_save)
-        super(ShipmentOut, cls)._sync_inventory_to_outgoing(shipments,
-            create, write)
+        for shipment in shipments:
+            outgoing = {}
+            for move in shipment.outgoing_moves:
+                if move.state == 'cancel':
+                    continue
+                outgoing.setdefault(move.product.id, [])
+                outgoing[move.product.id].append(move)
+
+            for move in shipment.inventory_moves:
+                if move.state in ('cancel'):
+                    continue
+                out = outgoing.get(move.product.id)
+                if not out:
+                    out = move.origin
+                    with Transaction().set_context(_stock_move_split=True):
+                         out = Move.copy([out], default={
+                            'number_of_packages':move.number_of_packages,
+                            'quantity': move.quantity,
+                            'package': move.package,
+                            'lot': move.lot,})
+                else:
+                    out = out.pop()
+                    out.number_of_packages = move.number_of_packages
+                    out.quantity = move.quantity
+                    out.lot = move.lot
+                    out.package = move.package
+                    out_moves.append(out)
+
+        Move.save(out_moves)
 
     @classmethod
     def assign_try(cls, shipments):
