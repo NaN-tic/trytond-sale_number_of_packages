@@ -6,9 +6,8 @@ from trytond.modules.stock_number_of_packages.package import PackagedMixin
 __all__ = ['SaleLine']
 
 
-class SaleLine(PackagedMixin):
+class SaleLine(PackagedMixin, metaclass=PoolMeta):
     __name__ = 'sale.line'
-    __metaclass__ = PoolMeta
 
     @classmethod
     def __setup__(cls):

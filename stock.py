@@ -15,9 +15,8 @@ from trytond.transaction import Transaction
 __all__ = ['Product', 'Lot', 'Move', 'ShipmentOut', 'Location']
 
 
-class Product:
+class Product(metaclass=PoolMeta):
     __name__ = 'product.product'
-    __metaclass__ = PoolMeta
 
     normalized_number_of_packages = fields.Function(fields.Integer(
             'Normalized number of packages', states={
@@ -41,9 +40,8 @@ class Product:
         return super(Product, cls)._quantity_context(name)
 
 
-class Lot:
+class Lot(metaclass=PoolMeta):
     __name__ = 'stock.lot'
-    __metaclass__ = PoolMeta
     number_of_packages_multiplier = fields.Integer(
         'Number of Packages Multiplier', states={
             'invisible': ~Bool(Eval('package_qty')),
@@ -173,9 +171,8 @@ class Lot:
         super(Lot, cls).write(*args)
 
 
-class Move:
+class Move(metaclass=PoolMeta):
     __name__ = 'stock.move'
-    __metaclass__ = PoolMeta
 
     @classmethod
     def compute_quantities_query(cls, location_ids, with_childs=False,
@@ -558,9 +555,8 @@ class Move:
         return to_pick
 
 
-class ShipmentOut:
+class ShipmentOut(metaclass=PoolMeta):
     __name__ = 'stock.shipment.out'
-    __metaclass__ = PoolMeta
 
     @classmethod
     def pack(cls, shipments):
@@ -632,9 +628,9 @@ class ShipmentOut:
             return super(ShipmentOut, cls).assign_try(shipments)
 
 
-class Location:
+class Location(metaclass=PoolMeta):
     __name__ = 'stock.location'
-    __metaclass__ = PoolMeta
+
 
     normalized_number_of_packages = fields.Function(
         fields.Integer('Normalized number of packages'),
