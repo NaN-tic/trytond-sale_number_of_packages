@@ -2,25 +2,14 @@
 # copyright notices and license terms.
 from trytond.pool import PoolMeta
 from trytond.modules.stock_number_of_packages.package import PackagedMixin
+from trytond.i18n import gettext
+from trytond.exceptions import UserError
 
 __all__ = ['SaleLine']
 
 
 class SaleLine(PackagedMixin, metaclass=PoolMeta):
     __name__ = 'sale.line'
-
-    @classmethod
-    def __setup__(cls):
-        super(SaleLine, cls).__setup__()
-        cls._error_messages.update({
-                'package_required': 'Package required for sale line "%s".',
-                'number_of_packages_required': (
-                    'Number of packages required for sale line "%s".'),
-                'package_qty_required': ('Quantity by Package is required '
-                    'for package "%(package)s" of sale line "%(record)s".'),
-                'invalid_quantity_number_of_packages': ('The quantity of sale '
-                    'line "%s" do not correspond to the number of packages.')
-                })
 
     def get_invoice_line(self):
         invoice_lines = super(SaleLine, self).get_invoice_line()

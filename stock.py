@@ -11,6 +11,8 @@ from trytond.model import Model, fields, Check
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Bool, Eval
 from trytond.transaction import Transaction
+from trytond.i18n import gettext
+from trytond.exceptions import UserError
 
 __all__ = ['Product', 'Lot', 'Move', 'ShipmentOut', 'Location']
 
@@ -79,11 +81,6 @@ class Lot(metaclass=PoolMeta):
                     | (t.number_of_packages_divider > '0')),
                 'Number of Packages Divider of Lot must be positive.'),
             ]
-        cls._error_messages.update({
-                'unexpected_number_of_packages_divider_multiplier': (
-                    'The Number of Packages Divider of lot "%s" doesn\'t '
-                    'corresponds with the Multiplier.'),
-                })
 
     @classmethod
     def _quantity_context(cls, name):
@@ -137,9 +134,9 @@ class Lot(metaclass=PoolMeta):
                 and self.number_of_packages_multiplier != 1
                 or self.number_of_packages_divider != None
                 and self.number_of_packages_multiplier != None):
-            self.raise_user_error(
-                'unexpected_number_of_packages_divider_multiplier',
-                self.rec_name)
+            raise UserError(gettext(
+                'sale_number_of_packages.unexpected_number_of_packages_divider_multiplier',
+                lot=self.rec_name))
 
     @classmethod
     def create(cls, vlist):
@@ -265,10 +262,13 @@ class Move(metaclass=PoolMeta):
                 continue
             if move.package or move.product.package_required:
                 if not move.package:
-                    cls.raise_user_error('package_required', move.rec_name)
+                    raise UserError(gettext(
+                        'sale_number_of_packages.package_required',
+                        move=move.rec_name))
                 if move.number_of_packages == None:
-                    cls.raise_user_error('number_of_packages_required',
-                        move.rec_name)
+                    raise UserError(gettext(
+                        'sale_number_of_packages.number_of_packages_required',
+                        move=move.rec_name))
                 if move.lot or move.product.lot_is_required(
                         move.from_location, move.to_location):
                     package_lot_moves.append(move)
