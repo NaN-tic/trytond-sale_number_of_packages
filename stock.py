@@ -331,7 +331,7 @@ class Move(metaclass=PoolMeta):
 
         pbl2 = {}
         id2lot = {}
-        for key, n_packages in pbl.iteritems():
+        for key, n_packages in pbl.items():
             n_packages = int(n_packages)
             if n_packages <= 0:
                 continue
@@ -371,13 +371,13 @@ class Move(metaclass=PoolMeta):
                                 cls._sort_lots_to_pick([
                                     (id2lot[key2], n_packages)
                                     for key2, n_packages
-                                    in pbl2[subkey].iteritems()
+                                    in pbl2[subkey].items()
                                     if key2]))
                         else:
                             location_n_packages[location] = [
                                 (key2, n_packages)
                                 for key2, n_packages
-                                in pbl2[subkey].iteritems()]
+                                in pbl2[subkey].items()]
                 elif subkey in pbl2 and key2 in pbl2[subkey]:
                     location_n_packages[location] = [
                         (key2, pbl2[subkey][key2]),
@@ -480,7 +480,7 @@ class Move(metaclass=PoolMeta):
         """
         to_pick = []
         needed_n_packages = self.number_of_packages
-        for location, available_keys in location_n_packages.iteritems():
+        for location, available_keys in location_n_packages.items():
             for (key, available_n_packages) in available_keys:
                 if available_n_packages <= 0:
                     continue
@@ -517,7 +517,7 @@ class Move(metaclass=PoolMeta):
         """
         to_pick = []
         needed_n_packages = self.number_of_packages
-        for location, available_keys in location_n_packages.iteritems():
+        for location, available_keys in location_n_packages.items():
             for (lot_id, available_n_packages) in available_keys:
                 if available_n_packages <= 0:
                     continue
