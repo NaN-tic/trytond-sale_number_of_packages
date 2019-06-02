@@ -36,8 +36,8 @@ class Product(metaclass=PoolMeta):
         if name.endswith('normalized_number_of_packages'):
             quantity_fname = name.replace('normalized_number_of_packages',
                 'number_of_packages')
-            context = super(Product, cls)._quantity_context(quantity_fname)
             context['normalized_number_of_packages'] = True
+            context['number_of_packages'] = True
             return context
         return super(Product, cls)._quantity_context(name)
 
@@ -171,81 +171,6 @@ class Lot(metaclass=PoolMeta):
 class Move(metaclass=PoolMeta):
     __name__ = 'stock.move'
 
-    @classmethod
-    def compute_quantities_query(cls, location_ids, with_childs=False,
-            grouping=('product',), grouping_filter=None,
-            quantity_field='internal_quantity'):
-        pool = Pool()
-        Lot = pool.get('stock.lot')
-        lot = Lot.__table__()
-
-        if not Transaction().context.get('normalized_number_of_packages'):
-            return super(Move, cls).compute_quantities_query(
-                location_ids, with_childs=with_childs, grouping=grouping,
-                grouping_filter=grouping_filter)
-
-        new_grouping = grouping[:]
-        new_grouping_filter = (grouping_filter[:] if grouping_filter != None
-            else None)
-        if 'lot' not in grouping:
-            new_grouping = grouping + ('lot',)
-            if grouping_filter != None:
-                new_grouping_filter = grouping_filter + (None,)
-
-        query = super(Move, cls).compute_quantities_query(
-            location_ids, with_childs=with_childs, grouping=new_grouping,
-            grouping_filter=new_grouping_filter)
-        if not query:
-            return query
-
-        def normalized_quantity_column(qty_col, table):
-            """
-            if number_of_packages_multiplier != None:
-                return ceil(quantity / number_of_packages_multiplier)
-            elif number_of_packages_divider != None:
-                return quantity * number_of_packages_divider
-            else:
-                return quantity
-            """
-            return Case((
-                    NotEqual(
-                        table.number_of_packages_multiplier, 0),
-                    Ceil(qty_col
-                        / table.number_of_packages_multiplier)),
-                (
-                    NotEqual(
-                        table.number_of_packages_divider, 0),
-                    qty_col * table.number_of_packages_divider),
-                else_=qty_col)
-
-        columns = []
-        group_by = []
-        for col in query.columns:
-            col_name = col.name if isinstance(col, Column) else col.output_name
-            if col_name == 'internal_quantity':
-                columns.append(
-                    normalized_quantity_column(
-                        Sum(Column(query, col_name)),
-                        lot).as_('quantity'))
-            else:
-                new_col = Column(query, col_name)
-                columns.append(new_col)
-                group_by.append(new_col)
-        columns = tuple(columns)
-        group_by += [
-            lot.number_of_packages_multiplier,
-            lot.number_of_packages_divider]
-        query = query.join(lot, type_='left', condition=query.lot == lot.id
-            ).select(*columns, group_by=group_by)
-
-        if 'lot' not in grouping:
-            query_keys = [Column(query, key).as_(key) for key in grouping]
-            columns = ([query.location.as_('location')]
-                + query_keys
-                + [Sum(query.quantity).as_('quantity')])
-            query = query.select(*columns,
-                group_by=[query.location] + query_keys)
-        return query
 
     @classmethod
     def assign_try(cls, moves, with_childs=True, grouping=('product',)):
@@ -644,7 +569,7 @@ class Location(metaclass=PoolMeta):
         if name.endswith('normalized_number_of_packages'):
             new_name = name.replace('normalized_number_of_packages',
                 'number_of_packages')
-            with Transaction().set_context(normalized_number_of_packages=True):
+            with Transaction().set_context(number_of_packages=True):
                 return super(Location, cls).get_number_of_packages(
                     locations, new_name)
         else:
