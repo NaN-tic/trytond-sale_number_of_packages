@@ -1,12 +1,7 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 import math
-from sql import Column, Null
-from sql.aggregate import Sum
-from sql.conditionals import Case
-from sql.functions import Ceil
-from sql.operators import NotEqual
-
+from sql import Null
 from trytond.model import Model, fields, Check
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Bool, Eval
@@ -33,13 +28,11 @@ class Product(metaclass=PoolMeta):
 
     @classmethod
     def _quantity_context(cls, name):
+        context = super(Product, cls)._quantity_context(name)
         if name.endswith('normalized_number_of_packages'):
-            quantity_fname = name.replace('normalized_number_of_packages',
-                'number_of_packages')
             context['normalized_number_of_packages'] = True
             context['number_of_packages'] = True
-            return context
-        return super(Product, cls)._quantity_context(name)
+        return context
 
 
 class Lot(metaclass=PoolMeta):
@@ -512,11 +505,9 @@ class ShipmentOut(metaclass=PoolMeta):
     @classmethod
     def _sync_inventory_to_outgoing(cls, shipments, create=True, write=True):
         pool = Pool()
-        Uom = pool.get('product.uom')
         Move = pool.get('stock.move')
-        from collections import defaultdict
-        out_moves = []
 
+        out_moves = []
         for shipment in shipments:
             outgoing = {}
             for move in shipment.outgoing_moves:
