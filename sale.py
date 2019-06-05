@@ -2,8 +2,6 @@
 # copyright notices and license terms.
 from trytond.pool import PoolMeta
 from trytond.modules.stock_number_of_packages.package import PackagedMixin
-from trytond.i18n import gettext
-from trytond.exceptions import UserError
 
 __all__ = ['SaleLine']
 
