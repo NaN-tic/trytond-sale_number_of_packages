@@ -271,6 +271,7 @@ class Move(metaclass=PoolMeta):
             return key
 
         success = True
+        success_list = []
         to_write = []
         to_assign = []
         for move in moves:
@@ -367,20 +368,21 @@ class Move(metaclass=PoolMeta):
                 pbl2.setdefault(to_subkey, {}).setdefault(key, 0)
                 pbl2[to_subkey][key] += n_packages
 
-            if not_picked_n_packages:
+            if not_picked_n_packages and move.package.qty:
                 to_write.extend(([move], {
                             'number_of_packages': not_picked_n_packages,
-                            'quantity': (not_picked_n_packages*
-                                move.package.qty)
+                            'quantity': (
+                                not_picked_n_packages * move.package.qty)
                             }))
-            if not_picked_n_packages <= 0 :
-                success=True
+            if not_picked_n_packages <= 0:
+                success = True
+            success_list.append(success)
 
         if to_write:
             Move.write(*to_write)
         if to_assign:
             Move.assign(to_assign)
-        return success
+        return all(success_list)
 
     @classmethod
     def _sort_lots_to_pick(cls, lots_to_pick):
